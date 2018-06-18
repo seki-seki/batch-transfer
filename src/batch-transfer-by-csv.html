@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="import" href="header.html">
+</head>
+<body>
+<h1 class="ui center aligned blue header">Advanced Wallet</h1>
+<div class="ui grid">
+    <div class="row">
+        <!-- TODO: Cut out menu -->
+        <div class="four wide column">
+            <div class="ui vertical fluid tabular menu">
+                <a class="item" href="./index.html">Top page</a>
+                <a class="active item" href="./batch-transfer-by-csv.html">
+                    Batch Transfer by csv
+                </a>
+                <a class="item" href="./balance.html">See your balance</a>
+            </div>
+        </div>
+        <div class="twelve wide column">
+            <h2 class="ui black header"> Import csv</h2>
+            <div id="importForm">
+                <form class="ui form">
+                    <div class="field">
+                        <label>csv</label>
+                        <input name="csv" type="file" accept="text/csv"/>
+                    </div>
+                    <div>
+                        <label>contract address</label>
+                        <input name="contract-address" type="text">
+                    </div>
+                    <div class="ui button" id="csv-import-btn" name="submit">Submit</div>
+                    <div id="txStatus"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

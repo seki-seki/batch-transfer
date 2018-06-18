@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="import" href="header.html">
+</head>
+<body>
+<h1 class="ui center aligned blue header">Advanced Wallet</h1>
+<div class="ui grid">
+    <div class="row">
+        <!-- TODO: Cut out menu -->
+        <div class="four wide column">
+            <div class="ui vertical fluid tabular menu">
+                <a class="item" href="./index.html">Top page</a>
+                <a class="item" href="./batch-transfer-by-csv.html">
+                    Batch Transfer by csv
+                </a>
+                <a class="active item" href="./balance.html">See your balance</a>
+            </div>
+        </div>
+        <div class="twelve wide column">
+            <h2 class="ui black header">See balance</h2>
+            <div id="balanceForm">
+                <form class="ui form">
+                    <div>
+                        <label>contract address</label>
+                        <input name="contract-address" type="text">
+                    </div>
+                    <div class="ui button" id="balance-btn" name="submit">Submit</div>
+                </form>
+                <div id="balance"/>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
