@@ -2,7 +2,7 @@ App = {
     web3Provider: null,
     contracts: {},
     userAccount: null,
-    csvFile:null,
+    csvFile: null,
 
     init: function () {
         return App.initWeb3();
@@ -37,9 +37,9 @@ App = {
     bindEvents: function () {
         $(document).on('click', '#csv-import-btn', App.csvImport);
         $(document).on('click', '#balance-btn', App.balance);
-        $(document).on('change',"#importForm input[name='csv']",App.fileUpload);
+        $(document).on('change', "#importForm input[name='csv']", App.fileUpload);
     },
-    csvImport : function () {
+    csvImport: function () {
         $("#txStatus").empty();
         $("#txStatus").append(`
                     <div class="ui icon message">
@@ -63,29 +63,27 @@ App = {
         console.log(addresses)
         console.log(amounts)
         App.contracts.wallet.deployed().then(function (instance) {
-            instance.batchTransfer(contractAddress,addresses,amounts, {
+            instance.batchTransfer(contractAddress, addresses, amounts, {
                 from: App.userAccount,
             }).then(function (receipt) {
                 $("#txStatus").empty();
                 $("#txStatus").append(`
                     <div class="ui positive message"> success </div>
                     `);
-            })
-                .catch(function (error) {
-                    $("#txStatus").empty();
-                    $("#txStatus").append(`
+            }).catch(function (error) {
+                $("#txStatus").empty();
+                $("#txStatus").append(`
                     <div class="ui negative message">${error} </div>
                     `);
-                });
+            });
         })
     },
 
-    balance : function () {
+    balance: function () {
         let contractAddress = $("#balanceForm input[name='contract-address']")[0].value;
         App.contracts.wallet.deployed().then(function (instance) {
             console.log(instance);
-            instance.balanceOfContract.call(contractAddress,App.userAccount ).then(function (balance) {
-
+            instance.balanceOfContract.call(contractAddress, App.userAccount).then(function (balance) {
                 let balanceElement = $("#balance")[0];
                 // balanceElement.empty();
                 balanceElement.append(balance.toString());
@@ -93,14 +91,14 @@ App = {
         })
     },
 
-    fileUpload : function (e) {
+    fileUpload: function (e) {
         let file = e.target.files[0];
         var reader = new FileReader();
 
-        reader.readAsText( file );
-        reader.addEventListener( 'load', function() {
+        reader.readAsText(file);
+        reader.addEventListener('load', function () {
             console.log(reader.result);
-            App.csvFile= reader.result;
+            App.csvFile = reader.result;
         })
     }
 };
