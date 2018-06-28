@@ -1,65 +1,65 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-
-/**
- * @title ERC20Basic
- * @dev Simpler version of ERC20 interface
- * @dev see https://github.com/ethereum/EIPs/issues/179
- */
-contract ERC20BasicInterface {
-    function totalSupply() public view returns (uint256);
-    function balanceOf(address who) public view returns (uint256);
-    function transfer(address to, uint256 value) public returns (bool);
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    uint8 public decimals;
-}
+import "../node_modules/openzeppelin-solidity/contracts/Ownership/Ownable.sol";
+import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 
 contract BatchTransferWallet is Ownable {
     using SafeMath for uint256;
 
-    event LogWithdrawal(address indexed receiver, uint amount);
+    event Withdraw(address indexed receiver, address indexed token, uint amount);
+    event TransferEther(address indexed sender, address indexed receiver, uint256 amount);
 
-    /**
-    * @dev Send token to multiple address
-    * @param _investors The addresses of EOA that can receive token from this contract.
-    * @param _tokenAmounts The values of token are sent from this contract.
-    */
-    function batchTransfer(address _tokenAddress, address[] _investors, uint256[] _tokenAmounts) public {
-        ERC20BasicInterface token = ERC20BasicInterface(_tokenAddress);
-        require(_investors.length == _tokenAmounts.length && _investors.length != 0);
+    modifier checkArrayArgument(address[] _receivers, uint256[] _amounts) {
+        require(_receivers.length == _amounts.length && _receivers.length != 0);
+        _;
+    }
 
-        uint decimalsForCalc = 10 ** uint256(token.decimals());
+    function batchTransferToken(address _token, address[] _receivers, uint256[] _tokenAmounts) public checkArrayArgument(_receivers, _tokenAmounts) {
+        require(_token != address(0));
 
-        for (uint i = 0; i < _investors.length; i++) {
-            require(_tokenAmounts[i] > 0 && _investors[i] != 0x0);
-            _tokenAmounts[i] = _tokenAmounts[i].mul(decimalsForCalc);
-            require(token.transfer(_investors[i], _tokenAmounts[i]));
+        ERC20 token = ERC20(_token);
+        require(allowanceForContract(_token) >= getTotalSendingAmount(_tokenAmounts));
+
+        for (uint i = 0; i < _receivers.length; i++) {
+            require(_receivers[i] != address(0));
+            require(token.transferFrom(msg.sender, _receivers[i], _tokenAmounts[i]));
         }
     }
 
-    /**
-    * @dev Withdraw the amount of token that is remaining in this contract.
-    * @param _address The address of EOA that can receive token from this contract.
-    */
-    function withdraw(address _tokenAddress,address _address) public onlyOwner {
-        ERC20BasicInterface token = ERC20BasicInterface(_tokenAddress);
-        uint tokenBalanceOfContract = token.balanceOf(this);
+    function batchTransferEther(address[] _receivers, uint[] _amounts) public payable checkArrayArgument(_receivers, _amounts) {
+        require(msg.value != 0 && msg.value == getTotalSendingAmount(_amounts));
 
-        require(_address != address(0) && tokenBalanceOfContract > 0);
-        require(token.transfer(_address, tokenBalanceOfContract));
-        emit LogWithdrawal(_address, tokenBalanceOfContract);
+        for (uint i = 0; i < _receivers.length; i++) {
+            require(_receivers[i] != address(0));
+            _receivers[i].transfer(_amounts[i]);
+            emit TransferEther(msg.sender, _receivers[i], _amounts[i]);
+        }
     }
 
-    /**
-    * @dev return token balance this contract has
-    * @return _address token balance this contract has.
-    */
-    function balanceOfContract(address _tokenAddress,address _address) public view returns (uint) {
-        ERC20BasicInterface token = ERC20BasicInterface(_tokenAddress);
-        return token.balanceOf(_address);
+    function withdraw(address _receiver, address _token) public onlyOwner {
+        ERC20 token = ERC20(_token);
+        uint tokenBalanceOfContract = token.balanceOf(this);
+        require(_receiver != address(0) && tokenBalanceOfContract > 0);
+        require(token.transfer(_receiver, tokenBalanceOfContract));
+        emit Withdraw(_receiver, _token, tokenBalanceOfContract);
+    }
+
+    function balanceOfContract(address _token) public view returns (uint) {
+        ERC20 token = ERC20(_token);
+        return token.balanceOf(this);
+    }
+
+    function allowanceForContract(address _token) public view returns (uint) {
+        ERC20 token = ERC20(_token);
+        return token.allowance(msg.sender, this);
+    }
+
+    function getTotalSendingAmount(uint256[] _amounts) private pure returns (uint totalSendingAmount) {
+        for (uint i = 0; i < _amounts.length; i++) {
+            require(_amounts[i] > 0);
+            totalSendingAmount = totalSendingAmount.add(_amounts[i]);
+        }
     }
 }
